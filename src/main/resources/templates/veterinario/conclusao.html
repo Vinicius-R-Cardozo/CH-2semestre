@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Registrar atendimento')}"></head>
+<body>
+<header th:replace="~{fragments :: menu}"></header>
+<main class="conteudo">
+    <div class="titulo-pagina">
+        <div>
+            <h1>Registrar atendimento</h1>
+            <p class="subtitulo"
+               th:text="|${agendamento.tipo.descricao} de ${agendamento.pet.nome} · ${#temporals.format(agendamento.data, 'dd/MM/yyyy')}|">
+                Vacinação de Thor</p>
+        </div>
+    </div>
+
+    <form class="formulario" method="post" th:object="${conclusaoForm}"
+          th:action="@{/veterinario/agendamentos/{id}/concluir(id=${agendamento.id})}">
+        <label for="observacao">O que foi realizado</label>
+        <textarea th:field="*{observacao}" th:errorclass="campo-invalido" rows="5" maxlength="500"
+                  placeholder="Ex.: vacina V10 aplicada, sem reações."></textarea>
+        <p class="erro-campo" th:errors="*{observacao}"></p>
+
+        <div class="acoes-formulario">
+            <button type="submit" class="botao">Registrar no histórico</button>
+            <a class="botao botao-secundario" th:href="@{/veterinario/agendamentos}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

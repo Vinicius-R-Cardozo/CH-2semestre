@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Meus agendamentos')}"></head>
+<body>
+<header th:replace="~{fragments :: menu}"></header>
+<main class="conteudo">
+    <div th:replace="~{fragments :: mensagens}"></div>
+
+    <div class="titulo-pagina">
+        <div>
+            <h1>Meus agendamentos</h1>
+            <p class="subtitulo">Acompanhe as solicitações enviadas para a clínica.</p>
+        </div>
+        <a class="botao" th:href="@{/tutor/agendamentos/novo}">Solicitar agendamento</a>
+    </div>
+
+    <p class="vazio" th:if="${agendamentos.isEmpty()}">Nenhum agendamento por aqui ainda.</p>
+    <div class="tabela" th:unless="${agendamentos.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>Data</th>
+                <th>Pet</th>
+                <th>Cuidado</th>
+                <th>Situação</th>
+                <th>Observação da clínica</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="agendamento : ${agendamentos}">
+                <td th:text="${#temporals.format(agendamento.data, 'dd/MM/yyyy')}">01/01/2026</td>
+                <td><a th:href="@{/tutor/pets/{id}(id=${agendamento.pet.id})}" th:text="${agendamento.pet.nome}">Thor</a></td>
+                <td th:text="${agendamento.tipo.descricao}">Vacinação</td>
+                <td><span th:replace="~{fragments :: selo(${agendamento.status})}"></span></td>
+                <td th:text="${agendamento.observacao} ?: '—'">—</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>
