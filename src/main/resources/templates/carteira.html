@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head(${carteira.pet.nome})}"></head>
+<body>
+<header th:replace="~{fragments :: menu}"></header>
+<main class="conteudo" th:with="pet=${carteira.pet}">
+    <div th:replace="~{fragments :: mensagens}"></div>
+
+    <div class="titulo-pagina">
+        <div>
+            <h1 th:text="${pet.nome}">Thor</h1>
+            <p class="subtitulo"
+               th:text="|${pet.especie.descricao} · ${pet.raca} · ${pet.faseVida.descricao}|">Cão · SRD · Adulto</p>
+            <p class="subtitulo" sec:authorize="hasRole('VETERINARIO')"
+               th:text="|Tutor: ${pet.tutor.nome}|">Tutor</p>
+        </div>
+    </div>
+
+    <h2>Próximos cuidados</h2>
+    <div class="tabela">
+        <table>
+            <thead>
+            <tr>
+                <th>Cuidado</th>
+                <th>Última vez</th>
+                <th>Previsto para</th>
+                <th>Situação</th>
+                <th sec:authorize="hasRole('TUTOR')"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="cuidado : ${carteira.proximosCuidados}">
+                <td th:text="${cuidado.tipo.descricao}">Vacinação</td>
+                <td th:text="${cuidado.ultimaRealizacao != null} ? ${#temporals.format(cuidado.ultimaRealizacao, 'dd/MM/yyyy')} : '—'"></td>
+                <td th:text="${cuidado.dataPrevista != null} ? ${#temporals.format(cuidado.dataPrevista, 'dd/MM/yyyy')} : 'Ainda não realizado'"></td>
+                <td><span th:replace="~{fragments :: selo(${cuidado.situacao})}"></span></td>
+                <td class="acoes" sec:authorize="hasRole('TUTOR')">
+                    <span class="selo selo-confirmado" th:if="${cuidado.agendado}">Agendado</span>
+                    <a class="botao" th:unless="${cuidado.agendado}"
+                       th:href="@{/tutor/agendamentos/novo(petId=${pet.id}, tipo=${cuidado.tipo})}">Agendar</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Histórico de atendimentos</h2>
+    <p class="vazio" th:if="${carteira.historico.isEmpty()}">Nenhum atendimento registrado ainda.</p>
+    <div class="tabela" th:unless="${carteira.historico.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>Data</th>
+                <th>Cuidado</th>
+                <th>Observação da clínica</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="atendimento : ${carteira.historico}">
+                <td th:text="${#temporals.format(atendimento.data, 'dd/MM/yyyy')}">01/01/2026</td>
+                <td th:text="${atendimento.tipo.descricao}">Vacinação</td>
+                <td th:text="${atendimento.observacao}">Observação</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Pacientes')}"></head>
+<body>
+<header th:replace="~{fragments :: menu}"></header>
+<main class="conteudo">
+    <div class="titulo-pagina">
+        <div>
+            <h1>Pacientes</h1>
+            <p class="subtitulo">Todos os pets acompanhados pela clínica.</p>
+        </div>
+    </div>
+
+    <p class="vazio" th:if="${pets.isEmpty()}">Nenhum pet cadastrado.</p>
+    <div class="tabela" th:unless="${pets.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Espécie</th>
+                <th>Raça</th>
+                <th>Fase de vida</th>
+                <th>Tutor</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="pet : ${pets}">
+                <td><a th:href="@{/veterinario/pets/{id}(id=${pet.id})}" th:text="${pet.nome}">Thor</a></td>
+                <td th:text="${pet.especie.descricao}">Cão</td>
+                <td th:text="${pet.raca}">SRD</td>
+                <td th:text="${pet.faseVida.descricao}">Adulto</td>
+                <td th:text="${pet.tutor.nome}">Tutor</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${petForm.id == null} ? 'Cadastrar pet' : 'Editar pet')}"></head>
+<body>
+<header th:replace="~{fragments :: menu}"></header>
+<main class="conteudo">
+    <div class="titulo-pagina">
+        <h1 th:text="${petForm.id == null} ? 'Cadastrar pet' : 'Editar pet'">Cadastrar pet</h1>
+    </div>
+
+    <form class="formulario" method="post" th:object="${petForm}"
+          th:action="${petForm.id == null} ? @{/tutor/pets} : @{/tutor/pets/{id}(id=${petForm.id})}">
+        <input type="hidden" th:field="*{id}">
+
+        <label for="nome">Nome</label>
+        <input type="text" th:field="*{nome}" th:errorclass="campo-invalido" maxlength="60">
+        <p class="erro-campo" th:errors="*{nome}"></p>
+
+        <label for="especie">Espécie</label>
+        <select th:field="*{especie}" th:errorclass="campo-invalido">
+            <option value="">Selecione</option>
+            <option th:each="especie : ${especies}" th:value="${especie}" th:text="${especie.descricao}">Cão</option>
+        </select>
+        <p class="erro-campo" th:errors="*{especie}"></p>
+
+        <label for="raca">Raça</label>
+        <input type="text" th:field="*{raca}" th:errorclass="campo-invalido" maxlength="60">
+        <p class="erro-campo" th:errors="*{raca}"></p>
+
+        <label for="dataNascimento">Data de nascimento</label>
+        <input type="date" th:field="*{dataNascimento}" th:errorclass="campo-invalido">
+        <p class="erro-campo" th:errors="*{dataNascimento}"></p>
+
+        <div class="acoes-formulario">
+            <button type="submit" class="botao">Salvar</button>
+            <a class="botao botao-secundario" th:href="@{/tutor/pets}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>
