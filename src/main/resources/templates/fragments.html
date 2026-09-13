@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="|${titulo} · Clyvo Vet|">Clyvo Vet</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+
+<body>
+
+<header th:fragment="menu" class="topo">
+    <a class="marca" th:href="@{/}">Clyvo Vet</a>
+    <nav>
+        <th:block sec:authorize="hasRole('TUTOR')">
+            <a th:href="@{/tutor/pets}">Meus pets</a>
+            <a th:href="@{/tutor/agendamentos}">Agendamentos</a>
+        </th:block>
+        <th:block sec:authorize="hasRole('VETERINARIO')">
+            <a th:href="@{/veterinario/agendamentos}">Agenda</a>
+            <a th:href="@{/veterinario/pets}">Pacientes</a>
+        </th:block>
+    </nav>
+    <form class="sair" sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+        <span sec:authentication="principal.nome">Usuário</span>
+        <button type="submit" class="botao botao-contorno-claro">Sair</button>
+    </form>
+</header>
+
+<div th:fragment="mensagens">
+    <p class="aviso aviso-sucesso" th:if="${sucesso}" th:text="${sucesso}"></p>
+    <p class="aviso aviso-erro" th:if="${erro}" th:text="${erro}"></p>
+</div>
+
+<span th:fragment="selo(situacao)" class="selo"
+      th:classappend="${'selo-' + #strings.toLowerCase(situacao.name())}"
+      th:text="${situacao.descricao}"></span>
+
+</body>
+</html>
