@@ -22,7 +22,7 @@ public class AgendamentoService {
         this.petService = petService;
     }
 
-    public void solicitar(Long tutorId, AgendamentoForm form) {
+    public Agendamento solicitar(Long tutorId, AgendamentoForm form) {
         Pet pet = petService.buscarDoTutor(tutorId, form.getPetId());
         boolean jaExisteEmAberto = agendamentoRepository
                 .existsByPetIdAndTipoAndStatusIn(pet.getId(), form.getTipo(), StatusAgendamento.EM_ABERTO);
@@ -30,7 +30,7 @@ public class AgendamentoService {
             throw new RegraDeNegocioException("%s já tem um agendamento de %s em aberto."
                     .formatted(pet.getNome(), form.getTipo().getDescricao().toLowerCase()));
         }
-        agendamentoRepository.save(new Agendamento(pet, form.getTipo(), form.getData()));
+        return agendamentoRepository.save(new Agendamento(pet, form.getTipo(), form.getData()));
     }
 
     public List<Agendamento> listarDoTutor(Long tutorId) {
@@ -52,21 +52,21 @@ public class AgendamentoService {
         return agendamento;
     }
 
-    public void confirmar(Long id) {
+    public Agendamento confirmar(Long id) {
         Agendamento agendamento = buscar(id);
         agendamento.confirmar();
-        agendamentoRepository.save(agendamento);
+        return agendamentoRepository.save(agendamento);
     }
 
-    public void recusar(Long id) {
+    public Agendamento recusar(Long id) {
         Agendamento agendamento = buscar(id);
         agendamento.recusar();
-        agendamentoRepository.save(agendamento);
+        return agendamentoRepository.save(agendamento);
     }
 
     public Agendamento concluir(Long id, String observacao) {
         Agendamento agendamento = buscar(id);
-        agendamento.concluir(observacao);
+        agendamento.concluir(observacao.strip());
         return agendamentoRepository.save(agendamento);
     }
 }

@@ -36,16 +36,16 @@ public class PetService {
         return petRepository.findByIdAndTutorId(petId, tutorId).orElseThrow(PetService::petNaoEncontrado);
     }
 
-    public void cadastrar(Long tutorId, PetForm form) {
+    public Pet cadastrar(Long tutorId, PetForm form) {
         Pet pet = new Pet(usuarioRepository.getReferenceById(tutorId));
         form.aplicarEm(pet);
-        petRepository.save(pet);
+        return petRepository.save(pet);
     }
 
-    public void atualizar(Long tutorId, Long petId, PetForm form) {
+    public Pet atualizar(Long tutorId, Long petId, PetForm form) {
         Pet pet = buscarDoTutor(tutorId, petId);
         form.aplicarEm(pet);
-        petRepository.save(pet);
+        return petRepository.save(pet);
     }
 
     public void excluir(Long tutorId, Long petId) {

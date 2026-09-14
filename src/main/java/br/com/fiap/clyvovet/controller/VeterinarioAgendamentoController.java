@@ -59,7 +59,7 @@ public class VeterinarioAgendamentoController {
         if (resultado.hasErrors()) {
             return exibirFormularioConclusao(id, model);
         }
-        Agendamento agendamento = agendamentoService.concluir(id, conclusaoForm.getObservacao().strip());
+        Agendamento agendamento = agendamentoService.concluir(id, conclusaoForm.getObservacao());
         redirectAttributes.addFlashAttribute("sucesso",
                 "Atendimento registrado. A carteira de cuidados foi atualizada.");
         return "redirect:/veterinario/pets/" + agendamento.getPet().getId();
