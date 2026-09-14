@@ -19,10 +19,11 @@ O Clyvo Vet organiza a vida clínica do pet em uma **carteira de cuidados**:
 
 - Java 17
 - Spring Boot 4.0.6 (Spring MVC, Spring Data JPA e Bean Validation)
-- Spring Security (login por formulário nas telas, HTTP Basic na API e senhas com BCrypt)
-- Thymeleaf e Thymeleaf Extras Spring Security
+- Spring Security (HTTP Basic e senhas com BCrypt)
 - Flyway
 - Banco H2 em arquivo
+- Lombok
+- HTML, CSS e JavaScript no frontend
 - Maven (com Maven Wrapper)
 
 ## Como executar
@@ -74,40 +75,56 @@ Carlos é tutor do Thor e da Luna; Mariana é tutora da Pipoca.
 
 ### 1. Frontend
 
-Páginas renderizadas no servidor com Thymeleaf: login, lista e cadastro de pets, carteira de cuidados, solicitação e acompanhamento de agendamentos, agenda da clínica, registro de atendimento e lista de pacientes. O menu e as ações mudam conforme o perfil logado.
+As telas ficam em `src/main/resources/static`. São páginas HTML com JavaScript que consomem a API do próprio projeto com `fetch`:
+
+| Página                  | Perfil              | O que mostra                                     |
+|-------------------------|---------------------|--------------------------------------------------|
+| `index.html`            | todos               | login                                            |
+| `pets.html`             | tutor               | lista de pets, com editar e excluir              |
+| `pet-form.html`         | tutor               | cadastro e edição de pet                         |
+| `carteira.html`         | tutor e veterinário | próximos cuidados e histórico do pet             |
+| `agendamentos.html`     | tutor               | agendamentos solicitados e situação de cada um   |
+| `agendamento-form.html` | tutor               | solicitação de agendamento                       |
+| `agenda.html`           | veterinário         | solicitações para confirmar e atendimentos       |
+| `conclusao.html`        | veterinário         | registro do atendimento                          |
+| `pacientes.html`        | veterinário         | todos os pets da clínica                         |
+
+O menu muda conforme o perfil logado.
 
 ### 2. Flyway
 
 As migrações ficam em `src/main/resources/db/migration`:
 
-| Versão | Arquivo                            | O que faz                                        |
-|--------|------------------------------------|--------------------------------------------------|
-| V1     | `V1__criar_tabela_usuario.sql`     | cria a tabela `usuario`                          |
-| V2     | `V2__criar_tabela_pet.sql`         | cria a tabela `pet`                              |
-| V3     | `V3__criar_tabela_agendamento.sql` | cria a tabela `agendamento`                      |
+| Versão | Arquivo                            | O que faz                                         |
+|--------|------------------------------------|---------------------------------------------------|
+| V1     | `V1__criar_tabela_usuario.sql`     | cria a tabela `usuario`                           |
+| V2     | `V2__criar_tabela_pet.sql`         | cria a tabela `pet`                               |
+| V3     | `V3__criar_tabela_agendamento.sql` | cria a tabela `agendamento`                       |
 | V4     | `V4__inserir_dados_iniciais.sql`   | insere usuários, pets e histórico de demonstração |
 
 O Hibernate apenas valida o esquema (`spring.jpa.hibernate.ddl-auto=validate`); quem cria e altera as tabelas é o Flyway.
 
 ### 3. Spring Security
 
-Dois perfis de usuário com permissões diferentes:
+A autenticação é **HTTP Basic**, sem sessão. A tela de login envia e-mail e senha para `POST /login`, e as demais chamadas da API levam o mesmo cabeçalho `Authorization`.
 
-| Perfil        | Rotas                                  | O que pode fazer                                                              |
-|---------------|----------------------------------------|-------------------------------------------------------------------------------|
-| `TUTOR`       | `/tutor/**` e `/api/tutor/**`          | cadastrar os próprios pets, ver a carteira de cuidados e solicitar agendamentos |
-| `VETERINARIO` | `/veterinario/**` e `/api/veterinario/**` | confirmar ou recusar solicitações, registrar atendimentos e consultar pacientes |
+Dois perfis com permissões diferentes, configurados em `SecurityConfig`:
 
-- As rotas são protegidas por perfil em `SecurityConfig`. Um tutor que tenta abrir `/veterinario/agendamentos` recebe a página de acesso negado (403).
-- O tutor só enxerga os próprios pets: abrir pela URL o pet de outro tutor retorna página não encontrada (404).
-- As telas usam login por formulário com sessão; a API usa HTTP Basic, sem sessão.
+| Perfil        | Rotas liberadas                                                              |
+|---------------|------------------------------------------------------------------------------|
+| `TUTOR`       | `/pets/**`, `GET /agendamentos` e `POST /agendamentos`                       |
+| `VETERINARIO` | `GET /agendamentos/abertos`, `GET /agendamentos/{id}`, os `PATCH` de agendamento e `/pacientes/**` |
+
+- Sem login a API responde **401**; com o perfil errado, **403**.
+- Nas telas, quem abre uma página de outro perfil vê a mensagem de acesso negado.
+- O tutor só enxerga os próprios pets: pedir o pet de outro tutor retorna **404**.
 - As senhas são armazenadas com BCrypt.
 
 ### 4. Fluxos completos
 
 **Fluxo 1 — Solicitação e confirmação de agendamento**
 
-1. O tutor abre a carteira do pet, vê um cuidado atrasado ou próximo e clica em **Agendar** (ou usa **Solicitar agendamento** no menu Agendamentos).
+1. O tutor abre a carteira do pet, vê um cuidado atrasado ou próximo e clica em **Agendar** (ou usa **Solicitar agendamento** em Agendamentos).
 2. O agendamento é criado com a situação **Solicitado**. Não é possível ter duas solicitações em aberto do mesmo cuidado para o mesmo pet.
 3. O veterinário vê a solicitação na **Agenda** e clica em **Confirmar** ou **Recusar**.
 4. O tutor acompanha a nova situação em **Agendamentos**.
@@ -131,38 +148,32 @@ O pet é filhote até completar 1 ano. Cães passam a sêniores aos 7 anos e gat
 
 ### 5. Validações
 
-- Formulários validados com Bean Validation e mensagens em português: campos obrigatórios, tamanho máximo, data de nascimento que não pode estar no futuro e data de agendamento que não pode estar no passado.
-- Regras de negócio no domínio: só é possível confirmar ou recusar um agendamento **Solicitado**, só é possível registrar atendimento de um agendamento **Confirmado** com data até hoje e não se abre uma segunda solicitação do mesmo cuidado para o mesmo pet.
+- Bean Validation com mensagens em português na entidade `Pet` e nos records de requisição do `AgendamentoController`: campos obrigatórios, tamanho máximo, data de nascimento que não pode estar no futuro e data de agendamento que não pode estar no passado.
+- Os erros voltam com status **400** e aparecem embaixo de cada campo do formulário.
+- Regras de negócio: só é possível confirmar ou recusar um agendamento **Solicitado**, só é possível registrar atendimento de um agendamento **Confirmado** com data até hoje e não se abre uma segunda solicitação do mesmo cuidado para o mesmo pet.
 
-## API REST
+## Rotas da API
 
-Além das telas, os mesmos fluxos estão disponíveis em uma API REST em `/api`. Os controllers da API usam `ResponseEntity` para devolver o status HTTP de cada operação.
+| Método | Rota                           | Perfil      | O que faz                                    | Status        |
+|--------|--------------------------------|-------------|----------------------------------------------|---------------|
+| POST   | `/login`                       | todos       | confere o login e devolve nome e perfil      | 200, 401      |
+| GET    | `/pets`                        | tutor       | lista os pets do tutor                       | 200           |
+| GET    | `/pets/{id}`                   | tutor       | busca um pet                                 | 200, 404      |
+| POST   | `/pets`                        | tutor       | cadastra um pet                              | 201, 400      |
+| PUT    | `/pets/{id}`                   | tutor       | atualiza um pet                              | 200, 400, 404 |
+| DELETE | `/pets/{id}`                   | tutor       | exclui um pet                                | 204, 404      |
+| GET    | `/pets/{id}/carteira`          | tutor       | próximos cuidados e histórico                | 200, 404      |
+| GET    | `/agendamentos`                | tutor       | lista os agendamentos do tutor               | 200           |
+| POST   | `/agendamentos`                | tutor       | solicita um agendamento                      | 201, 400, 404 |
+| GET    | `/agendamentos/abertos`        | veterinário | agendamentos solicitados e confirmados       | 200           |
+| GET    | `/agendamentos/{id}`           | veterinário | busca um agendamento                         | 200, 404      |
+| PATCH  | `/agendamentos/{id}/confirmar` | veterinário | confirma uma solicitação                     | 200, 400, 404 |
+| PATCH  | `/agendamentos/{id}/recusar`   | veterinário | recusa uma solicitação                       | 200, 400, 404 |
+| PATCH  | `/agendamentos/{id}/concluir`  | veterinário | registra o atendimento                       | 200, 400, 404 |
+| GET    | `/pacientes`                   | veterinário | lista todos os pets                          | 200           |
+| GET    | `/pacientes/{id}/carteira`     | veterinário | carteira de qualquer pet                     | 200, 404      |
 
-A autenticação é **HTTP Basic** com os usuários de teste. No Postman ou no Insomnia, use *Auth → Basic Auth* com o e-mail e a senha.
-
-### Tutor
-
-| Método | Rota                            | O que faz                              | Status        |
-|--------|---------------------------------|----------------------------------------|---------------|
-| GET    | `/api/tutor/pets`               | lista os pets do tutor                 | 200           |
-| GET    | `/api/tutor/pets/{id}`          | busca um pet                           | 200, 404      |
-| POST   | `/api/tutor/pets`               | cadastra um pet                        | 201, 400      |
-| PUT    | `/api/tutor/pets/{id}`          | atualiza um pet                        | 200, 400, 404 |
-| DELETE | `/api/tutor/pets/{id}`          | exclui um pet                          | 204, 404      |
-| GET    | `/api/tutor/pets/{id}/carteira` | mostra próximos cuidados e histórico   | 200, 404      |
-| GET    | `/api/tutor/agendamentos`       | lista os agendamentos do tutor         | 200           |
-| POST   | `/api/tutor/agendamentos`       | solicita um agendamento                | 201, 400, 404 |
-
-### Veterinário
-
-| Método | Rota                                           | O que faz                          | Status        |
-|--------|------------------------------------------------|------------------------------------|---------------|
-| GET    | `/api/veterinario/agendamentos`                | lista os agendamentos em aberto    | 200           |
-| PATCH  | `/api/veterinario/agendamentos/{id}/confirmar` | confirma uma solicitação           | 200, 400, 404 |
-| PATCH  | `/api/veterinario/agendamentos/{id}/recusar`   | recusa uma solicitação             | 200, 400, 404 |
-| PATCH  | `/api/veterinario/agendamentos/{id}/concluir`  | registra o atendimento             | 200, 400, 404 |
-
-Sem autenticação a API responde **401**; com o perfil errado, **403**.
+Para testar no Postman ou no Insomnia, use *Auth → Basic Auth* com um dos usuários de teste.
 
 ### Corpos das requisições
 
@@ -205,7 +216,7 @@ Dados inválidos voltam com **400** e a lista de campos:
 ]
 ```
 
-Regras de negócio voltam com **400** e recursos não encontrados com **404**, ambos no formato:
+Regras de negócio voltam com **400** e recursos não encontrados com **404**, no formato:
 
 ```json
 { "mensagem": "Luna já tem um agendamento de vermífugo em aberto." }
@@ -215,17 +226,14 @@ Regras de negócio voltam com **400** e recursos não encontrados com **404**, a
 
 ```text
 src/main/java/br/com/fiap/clyvovet
-├── controller       telas de login, do tutor e do veterinário
-│   └── api          API REST com ResponseEntity e tratamento de erros da API
-├── dto              formulários, respostas da API e dados exibidos nas telas
-├── exception        exceções de regra de negócio e de recurso não encontrado
-├── model            entidades JPA e enums do domínio
-├── repository       repositórios Spring Data JPA
-├── security         configuração do Spring Security e usuário autenticado
-└── service          regras de negócio
+├── controller     AuthController, PetController, AgendamentoController e PacienteController
+├── exception      exceções e tratamento dos erros da API
+├── model          entidades JPA, enums e records do domínio
+├── repository     repositórios Spring Data JPA
+├── security       configuração do Spring Security e usuário autenticado
+└── service        regras de negócio
 
 src/main/resources
-├── db/migration     migrações Flyway
-├── static/css       estilos
-└── templates        páginas Thymeleaf
+├── db/migration   migrações Flyway
+└── static         páginas HTML, CSS e JavaScript
 ```
