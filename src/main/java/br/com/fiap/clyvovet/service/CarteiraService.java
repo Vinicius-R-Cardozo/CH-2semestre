@@ -1,9 +1,9 @@
 package br.com.fiap.clyvovet.service;
 
-import br.com.fiap.clyvovet.dto.CarteiraPet;
-import br.com.fiap.clyvovet.dto.ProximoCuidado;
 import br.com.fiap.clyvovet.model.Agendamento;
+import br.com.fiap.clyvovet.model.CarteiraPet;
 import br.com.fiap.clyvovet.model.Pet;
+import br.com.fiap.clyvovet.model.ProximoCuidado;
 import br.com.fiap.clyvovet.model.SituacaoCuidado;
 import br.com.fiap.clyvovet.model.StatusAgendamento;
 import br.com.fiap.clyvovet.model.TipoCuidado;

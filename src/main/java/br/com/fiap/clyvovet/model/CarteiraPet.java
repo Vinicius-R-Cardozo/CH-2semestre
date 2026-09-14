@@ -1,7 +1,4 @@
-package br.com.fiap.clyvovet.dto;
-
-import br.com.fiap.clyvovet.model.Agendamento;
-import br.com.fiap.clyvovet.model.Pet;
+package br.com.fiap.clyvovet.model;
 
 import java.util.List;
 

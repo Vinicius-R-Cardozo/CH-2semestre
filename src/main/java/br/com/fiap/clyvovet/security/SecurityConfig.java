@@ -1,55 +1,42 @@
 package br.com.fiap.clyvovet.security;
 
-import br.com.fiap.clyvovet.model.Perfil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+
+import static br.com.fiap.clyvovet.model.Perfil.TUTOR;
+import static br.com.fiap.clyvovet.model.Perfil.VETERINARIO;
 
 @Configuration
 public class SecurityConfig {
 
     @Bean
-    @Order(1)
-    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/**")
-                .authorizeHttpRequests(autorizacao -> autorizacao
-                        .requestMatchers("/api/tutor/**").hasRole(Perfil.TUTOR.name())
-                        .requestMatchers("/api/veterinario/**").hasRole(Perfil.VETERINARIO.name())
-                        .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/*.html", "/css/**", "/js/**", "/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/agendamentos").hasRole(TUTOR.name())
+                        .requestMatchers(HttpMethod.POST, "/agendamentos").hasRole(TUTOR.name())
+                        .requestMatchers("/pets/**").hasRole(TUTOR.name())
+                        .requestMatchers("/agendamentos/**", "/pacientes/**").hasRole(VETERINARIO.name())
+                        .anyRequest().authenticated()
+                )
+                .httpBasic(basic -> basic.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }
 
     @Bean
-    @Order(2)
-    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .authorizeHttpRequests(autorizacao -> autorizacao
-                        .requestMatchers("/login", "/css/**", "/error").permitAll()
-                        .requestMatchers("/tutor/**").hasRole(Perfil.TUTOR.name())
-                        .requestMatchers("/veterinario/**").hasRole(Perfil.VETERINARIO.name())
-                        .anyRequest().authenticated())
-                .formLogin(login -> login
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll())
-                .build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

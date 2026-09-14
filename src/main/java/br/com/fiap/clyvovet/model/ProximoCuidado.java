@@ -1,7 +1,4 @@
-package br.com.fiap.clyvovet.dto;
-
-import br.com.fiap.clyvovet.model.SituacaoCuidado;
-import br.com.fiap.clyvovet.model.TipoCuidado;
+package br.com.fiap.clyvovet.model;
 
 import java.time.LocalDate;
 

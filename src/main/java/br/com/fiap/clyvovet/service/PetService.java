@@ -1,6 +1,5 @@
 package br.com.fiap.clyvovet.service;
 
-import br.com.fiap.clyvovet.dto.PetForm;
 import br.com.fiap.clyvovet.exception.RecursoNaoEncontradoException;
 import br.com.fiap.clyvovet.model.Pet;
 import br.com.fiap.clyvovet.repository.PetRepository;
@@ -36,15 +35,16 @@ public class PetService {
         return petRepository.findByIdAndTutorId(petId, tutorId).orElseThrow(PetService::petNaoEncontrado);
     }
 
-    public Pet cadastrar(Long tutorId, PetForm form) {
-        Pet pet = new Pet(usuarioRepository.getReferenceById(tutorId));
-        form.aplicarEm(pet);
+    public Pet cadastrar(Long tutorId, Pet pet) {
+        pet.setId(null);
+        pet.setTutor(usuarioRepository.findById(tutorId).orElseThrow());
         return petRepository.save(pet);
     }
 
-    public Pet atualizar(Long tutorId, Long petId, PetForm form) {
-        Pet pet = buscarDoTutor(tutorId, petId);
-        form.aplicarEm(pet);
+    public Pet atualizar(Long tutorId, Long petId, Pet pet) {
+        Pet existente = buscarDoTutor(tutorId, petId);
+        pet.setId(existente.getId());
+        pet.setTutor(existente.getTutor());
         return petRepository.save(pet);
     }
 

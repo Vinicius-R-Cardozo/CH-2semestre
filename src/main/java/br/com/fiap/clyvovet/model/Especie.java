@@ -2,19 +2,13 @@ package br.com.fiap.clyvovet.model;
 
 public enum Especie {
 
-    CAO("Cão", 7),
-    GATO("Gato", 10);
+    CAO(7),
+    GATO(10);
 
-    private final String descricao;
     private final int idadeInicioSenior;
 
-    Especie(String descricao, int idadeInicioSenior) {
-        this.descricao = descricao;
+    Especie(int idadeInicioSenior) {
         this.idadeInicioSenior = idadeInicioSenior;
-    }
-
-    public String getDescricao() {
-        return descricao;
     }
 
     public int getIdadeInicioSenior() {
