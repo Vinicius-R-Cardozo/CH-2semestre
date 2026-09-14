@@ -6,7 +6,6 @@ import br.com.fiap.clyvovet.model.Pet;
 import br.com.fiap.clyvovet.repository.PetRepository;
 import br.com.fiap.clyvovet.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,39 +20,34 @@ public class PetService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    @Transactional(readOnly = true)
     public List<Pet> listarDoTutor(Long tutorId) {
         return petRepository.findByTutorIdOrderByNome(tutorId);
     }
 
-    @Transactional(readOnly = true)
     public List<Pet> listarTodos() {
         return petRepository.findAllByOrderByNome();
     }
 
-    @Transactional(readOnly = true)
     public Pet buscar(Long petId) {
         return petRepository.findById(petId).orElseThrow(PetService::petNaoEncontrado);
     }
 
-    @Transactional(readOnly = true)
     public Pet buscarDoTutor(Long tutorId, Long petId) {
         return petRepository.findByIdAndTutorId(petId, tutorId).orElseThrow(PetService::petNaoEncontrado);
     }
 
-    @Transactional
     public void cadastrar(Long tutorId, PetForm form) {
         Pet pet = new Pet(usuarioRepository.getReferenceById(tutorId));
         form.aplicarEm(pet);
         petRepository.save(pet);
     }
 
-    @Transactional
     public void atualizar(Long tutorId, Long petId, PetForm form) {
-        form.aplicarEm(buscarDoTutor(tutorId, petId));
+        Pet pet = buscarDoTutor(tutorId, petId);
+        form.aplicarEm(pet);
+        petRepository.save(pet);
     }
 
-    @Transactional
     public void excluir(Long tutorId, Long petId) {
         petRepository.delete(buscarDoTutor(tutorId, petId));
     }

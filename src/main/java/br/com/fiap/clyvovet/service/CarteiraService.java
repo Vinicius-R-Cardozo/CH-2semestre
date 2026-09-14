@@ -9,7 +9,6 @@ import br.com.fiap.clyvovet.model.StatusAgendamento;
 import br.com.fiap.clyvovet.model.TipoCuidado;
 import br.com.fiap.clyvovet.repository.AgendamentoRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -24,7 +23,6 @@ public class CarteiraService {
         this.agendamentoRepository = agendamentoRepository;
     }
 
-    @Transactional(readOnly = true)
     public CarteiraPet montar(Pet pet) {
         List<Agendamento> historico = agendamentoRepository
                 .findByPetIdAndStatusOrderByDataDesc(pet.getId(), StatusAgendamento.REALIZADO);

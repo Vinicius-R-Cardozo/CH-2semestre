@@ -8,7 +8,6 @@ import br.com.fiap.clyvovet.model.Pet;
 import br.com.fiap.clyvovet.model.StatusAgendamento;
 import br.com.fiap.clyvovet.repository.AgendamentoRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,7 +22,6 @@ public class AgendamentoService {
         this.petService = petService;
     }
 
-    @Transactional
     public void solicitar(Long tutorId, AgendamentoForm form) {
         Pet pet = petService.buscarDoTutor(tutorId, form.getPetId());
         boolean jaExisteEmAberto = agendamentoRepository
@@ -35,43 +33,40 @@ public class AgendamentoService {
         agendamentoRepository.save(new Agendamento(pet, form.getTipo(), form.getData()));
     }
 
-    @Transactional(readOnly = true)
     public List<Agendamento> listarDoTutor(Long tutorId) {
         return agendamentoRepository.findByPetTutorIdOrderByDataDesc(tutorId);
     }
 
-    @Transactional(readOnly = true)
     public List<Agendamento> listarEmAberto() {
         return agendamentoRepository.findByStatusInOrderByData(StatusAgendamento.EM_ABERTO);
     }
 
-    @Transactional(readOnly = true)
     public Agendamento buscar(Long id) {
         return agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento não encontrado."));
     }
 
-    @Transactional(readOnly = true)
     public Agendamento buscarParaConclusao(Long id) {
         Agendamento agendamento = buscar(id);
         agendamento.garantirQuePodeSerConcluido();
         return agendamento;
     }
 
-    @Transactional
     public void confirmar(Long id) {
-        buscar(id).confirmar();
+        Agendamento agendamento = buscar(id);
+        agendamento.confirmar();
+        agendamentoRepository.save(agendamento);
     }
 
-    @Transactional
     public void recusar(Long id) {
-        buscar(id).recusar();
+        Agendamento agendamento = buscar(id);
+        agendamento.recusar();
+        agendamentoRepository.save(agendamento);
     }
 
-    @Transactional
     public Agendamento concluir(Long id, String observacao) {
         Agendamento agendamento = buscar(id);
         agendamento.concluir(observacao);
-        return agendamento;
+        return agendamentoRepository.save(agendamento);
     }
 }
