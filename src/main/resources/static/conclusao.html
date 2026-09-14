@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registrar atendimento · Clyvo Vet</title>
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<header class="topo"></header>
+<main class="conteudo">
+    <div id="avisos"></div>
+
+    <div class="titulo-pagina">
+        <div>
+            <h1>Registrar atendimento</h1>
+            <p class="subtitulo" id="resumo"></p>
+        </div>
+    </div>
+
+    <form class="formulario" id="formulario">
+        <label for="observacao">O que foi realizado</label>
+        <textarea id="observacao" name="observacao" rows="5" maxlength="500"
+                  placeholder="Ex.: vacina V10 aplicada, sem reações."></textarea>
+        <p class="erro-campo" data-erro="observacao"></p>
+
+        <div class="acoes-formulario">
+            <button type="submit" class="botao">Registrar no histórico</button>
+            <a class="botao botao-secundario" href="agenda.html">Cancelar</a>
+        </div>
+    </form>
+</main>
+<script src="js/app.js"></script>
+<script src="js/conclusao.js"></script>
+</body>
+</html>

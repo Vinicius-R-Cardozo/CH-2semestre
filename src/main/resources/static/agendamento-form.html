@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Solicitar agendamento · Clyvo Vet</title>
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<header class="topo"></header>
+<main class="conteudo">
+    <div id="avisos"></div>
+
+    <div class="titulo-pagina">
+        <div>
+            <h1>Solicitar agendamento</h1>
+            <p class="subtitulo">A clínica analisa o pedido e confirma a data.</p>
+        </div>
+    </div>
+
+    <p class="vazio" id="sem-pets" hidden>
+        Cadastre um pet antes de solicitar um agendamento.
+        <a href="pet-form.html">Cadastrar pet</a>
+    </p>
+
+    <form class="formulario" id="formulario" hidden>
+        <label for="petId">Pet</label>
+        <select id="petId" name="petId"></select>
+        <p class="erro-campo" data-erro="petId"></p>
+
+        <label for="tipo">Cuidado</label>
+        <select id="tipo" name="tipo" data-opcoes="VACINA,VERMIFUGO,CHECKUP"></select>
+        <p class="erro-campo" data-erro="tipo"></p>
+
+        <label for="data">Data desejada</label>
+        <input type="date" id="data" name="data">
+        <p class="erro-campo" data-erro="data"></p>
+
+        <div class="acoes-formulario">
+            <button type="submit" class="botao">Enviar solicitação</button>
+            <a class="botao botao-secundario" href="agendamentos.html">Cancelar</a>
+        </div>
+    </form>
+</main>
+<script src="js/app.js"></script>
+<script src="js/agendamento-form.js"></script>
+</body>
+</html>
